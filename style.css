@@ -226,4 +226,13 @@ select:focus{border-color: rgba(255,255,255,.45)}
   .game{grid-template-columns: 1fr; min-height: 640px}
   .card{min-height: 300px}
   .icon{width: 58px; height: 58px}
+  
+}
+/* FORCE Spot-It cards */
+.card{
+  background: #fff !important;
+  border-radius: 50% !important;
+  aspect-ratio: 1 / 1 !important;
+  border: 10px solid rgba(255,255,255,.75) !important;
+  overflow: hidden !important;
 }
