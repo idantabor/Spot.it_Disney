@@ -319,7 +319,6 @@ function rand(min, max) {
 
   });
 
-}
   clearCard(el);
 
   const rect = el.getBoundingClientRect();
