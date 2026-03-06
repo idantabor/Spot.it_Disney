@@ -163,63 +163,118 @@ function clearCard(el){
 function renderCard(el, symbols){
   clearCard(el);
 
-  // Card padding
   const rect = el.getBoundingClientRect();
   const W = rect.width;
   const H = rect.height;
+  const cx = W / 2;
+  const cy = H / 2;
 
-  // Icon sizing baseline (responsive-ish)
-  const base = clamp(Math.min(W, H) / 4.2, 46, 74);
+  // רדיוס פנימי של העיגול (משאיר שוליים כדי לא לגעת במסגרת)
+  const circleR = Math.min(W, H) * 0.44;
 
-  // We'll place icons randomly with lightweight collision avoidance
-  const placed = [];
-  const margin = 10;
+  // גודל בסיס – נקבע לפי מסך (ואז נייצר וריאציות)
+  const base = clamp(Math.min(W, H) / 4.0, 44, 78);
 
-  const shuffled = shuffle([...symbols]);
+  // ערבוב כדי שכל קלף ייראה שונה
+  const list = shuffle([...symbols]);
 
-  for (const symId of shuffled){
+  // חלוקה לטבעות (מרכז + טבעת פנימית + טבעת חיצונית)
+  // זה נותן תחושת “פריסה על כל הקלף” ולא גוש אחד.
+  const rings = buildRings(list.length);
+
+  // נבנה “מיקומים” מראש ואז נשבץ אליהם סמלים
+  const spots = [];
+  let idx = 0;
+
+  for (const ring of rings){
+    const count = ring.count;
+    const rMin = ring.rMin * circleR;
+    const rMax = ring.rMax * circleR;
+
+    // start angle רנדומלי כדי שלא יחזור אותו סידור
+    const start = Math.random() * Math.PI * 2;
+
+    for (let k = 0; k < count; k++){
+      const t = (k / count) * Math.PI * 2 + start;
+
+      // רדיוס רנדומלי בתוך טווח הטבעת
+      const r = rMin + Math.random() * (rMax - rMin);
+
+      // קצת "שבירה" כדי שלא יהיה מושלם מדי
+      const jitter = circleR * 0.03;
+      const x = cx + r * Math.cos(t) + (Math.random() * 2 - 1) * jitter;
+      const y = cy + r * Math.sin(t) + (Math.random() * 2 - 1) * jitter;
+
+      spots.push({ x, y });
+    }
+  }
+
+  // אם מסיבה כלשהי חסר spots (לא אמור), נוסיף
+  while (spots.length < list.length){
+    spots.push({ x: cx, y: cy });
+  }
+
+  // עכשיו יוצרים אייקונים וממקמים אותם על הנקודות
+  for (let i = 0; i < list.length; i++){
+    const symId = list[i];
+    const spot = spots[i];
+
     const img = document.createElement("img");
     img.className = "icon";
     img.alt = `symbol-${symId}`;
     img.src = imageUrlForSymbol(symId);
     img.dataset.symbolId = String(symId);
 
-    const scale = (0.80 + Math.random() * 0.55); // 0.80..1.35
-    const size = base * scale;
+    // גדלים שונים בצורה “נשלטת” (לא קיצוני מדי)
+    // אחד-שניים יהיו גדולים, כמה בינוניים, והשאר קטנים/בינוניים.
+    const sizeFactor =
+      i === 0 ? (1.25 + Math.random() * 0.15) :
+      i === 1 ? (1.10 + Math.random() * 0.15) :
+      (0.75 + Math.random() * 0.55);
 
+    const size = base * sizeFactor;
+
+    // מרכזים לפי נקודה (x,y)
     img.style.width = `${size}px`;
     img.style.height = `${size}px`;
+    img.style.left = `${spot.x}px`;
+    img.style.top = `${spot.y}px`;
 
-    const rot = (Math.random() * 60 - 30).toFixed(1) + "deg";
-    img.style.setProperty("--rot", rot);
-    img.style.setProperty("--scale", "1"); // scale already baked into size
+    // מיקום מהמרכז של האייקון
+    img.style.transform = `translate(-50%, -50%) rotate(${(Math.random()*70-35).toFixed(1)}deg)`;
 
-    // Find a spot
-    let x = 0, y = 0;
-    let tries = 0;
-    const maxTries = 40;
-
-    while (tries < maxTries){
-      tries++;
-      x = margin + Math.random() * (W - size - 2*margin);
-      y = margin + Math.random() * (H - size - 2*margin);
-
-      const bbox = { x, y, w: size, h: size };
-      const ok = placed.every(p => !rectsOverlap(bbox, p, 10));
-      if (ok) {
-        placed.push(bbox);
-        break;
-      }
-    }
-
-    img.style.left = `${x}px`;
-    img.style.top = `${y}px`;
-
-    // Pointer events (works for mouse + touch)
+    // מניעת יציאה החוצה: הקלף עגול+overflow hidden עושה כבר את רוב העבודה
     img.addEventListener("pointerdown", onIconPress, { passive: true });
 
     el.appendChild(img);
+    idx++;
   }
+}
+
+// טבעות מומלצות לפי מספר סמלים
+function buildRings(n){
+  // מרכז: 1
+  // טבעת פנימית: ~ (n-1)/2
+  // טבעת חיצונית: השאר
+  if (n <= 4){
+    return [
+      { count: 1, rMin: 0.00, rMax: 0.05 },
+      { count: n - 1, rMin: 0.35, rMax: 0.65 },
+    ];
+  }
+  if (n <= 6){
+    return [
+      { count: 1, rMin: 0.00, rMax: 0.05 },
+      { count: 2, rMin: 0.25, rMax: 0.45 },
+      { count: n - 3, rMin: 0.55, rMax: 0.85 },
+    ];
+  }
+  // n = 8 (קשה) וגם אם בעתיד תגדילי
+  return [
+    { count: 1, rMin: 0.00, rMax: 0.05 },
+    { count: 3, rMin: 0.25, rMax: 0.50 },
+    { count: n - 4, rMin: 0.58, rMax: 0.90 },
+  ];
 }
 
 function rectsOverlap(a, b, pad){
