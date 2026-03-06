@@ -162,94 +162,83 @@ function clearCard(el){
   el.innerHTML = "";
 }
 
-function renderCard(el, symbols) {
+function renderCard(el, symbols){
+
   clearCard(el);
 
   const rect = el.getBoundingClientRect();
   const W = rect.width;
   const H = rect.height;
-  const cx = W / 2;
-  const cy = H / 2;
-  const minSide = Math.min(W, H);
+
+  const cx = W/2;
+  const cy = H/2;
+
+  const minSide = Math.min(W,H);
 
   const list = shuffle([...symbols]);
-  const count = list.length;
 
-  // התאמת גודל ורדיוס לפי כמות הסמלים
-  let centerScale, outerScaleMin, outerScaleMax, outerRadius;
+  const baseSize = minSide * 0.22;
 
-  if (count === 4) {
-    centerScale = 1.28;
-    outerScaleMin = 1.02;
-    outerScaleMax = 1.16;
-    outerRadius = minSide * 0.31;
-  } else if (count === 6) {
-    centerScale = 1.12;
-    outerScaleMin = 0.88;
-    outerScaleMax = 1.02;
-    outerRadius = minSide * 0.34;
-  } else {
-    // 8 סמלים
-    centerScale = 1.00;
-    outerScaleMin = 0.72;
-    outerScaleMax = 0.90;
-    outerRadius = minSide * 0.355;
-  }
+  const radius = minSide * 0.36;
 
-  const baseSize = minSide * 0.19;
-
-  // סמל מרכזי
   const centerId = list[0];
+
   const centerImg = document.createElement("img");
   centerImg.className = "icon";
   centerImg.src = imageUrlForSymbol(centerId);
-  centerImg.dataset.symbolId = String(centerId);
+  centerImg.dataset.symbolId = centerId;
 
-  const centerSize = baseSize * centerScale;
-  centerImg.style.width = `${centerSize}px`;
-  centerImg.style.height = `${centerSize}px`;
-  centerImg.style.left = `${cx}px`;
-  centerImg.style.top = `${cy}px`;
-  centerImg.style.transform = `translate(-50%, -50%) rotate(${rand(-18, 18)}deg)`;
-  centerImg.addEventListener("pointerdown", onIconPress, { passive: true });
+  const centerSize = baseSize * 1.2;
+
+  centerImg.style.width = centerSize + "px";
+  centerImg.style.height = centerSize + "px";
+
+  centerImg.style.left = cx + "px";
+  centerImg.style.top = cy + "px";
+
+  centerImg.style.transform = "translate(-50%, -50%)";
+
+  centerImg.addEventListener("pointerdown", onIconPress,{passive:true});
+
   el.appendChild(centerImg);
 
-  // שאר הסמלים מסביב
   const others = list.slice(1);
-  const step = (Math.PI * 2) / others.length;
 
-  // היסט אקראי כדי שלא כל קלף ייראה אותו דבר
-  const startAngle = Math.random() * Math.PI * 2;
+  const step = (Math.PI*2)/others.length;
 
-  others.forEach((symId, i) => {
-    const angle = startAngle + i * step;
+  const start = Math.random()*Math.PI*2;
 
-    // תנודה קטנה ברדיוס כדי שלא יהיה "גיאומטרי מדי"
-    const radiusJitter = minSide * 0.018;
-    const r = outerRadius + rand(-radiusJitter, radiusJitter);
+  others.forEach((sym,i)=>{
 
-    const x = cx + r * Math.cos(angle);
-    const y = cy + r * Math.sin(angle);
+    const angle = start + i*step;
+
+    const x = cx + radius*Math.cos(angle);
+    const y = cy + radius*Math.sin(angle);
 
     const img = document.createElement("img");
+
     img.className = "icon";
-    img.src = imageUrlForSymbol(symId);
-    img.dataset.symbolId = String(symId);
+    img.src = imageUrlForSymbol(sym);
+    img.dataset.symbolId = sym;
 
-    const scale = rand(outerScaleMin, outerScaleMax);
-    const size = baseSize * scale;
+    const size = baseSize*(0.8+Math.random()*0.4);
 
-    img.style.width = `${size}px`;
-    img.style.height = `${size}px`;
-    img.style.left = `${x}px`;
-    img.style.top = `${y}px`;
-    img.style.transform = `translate(-50%, -50%) rotate(${rand(-28, 28)}deg)`;
+    img.style.width = size+"px";
+    img.style.height = size+"px";
 
-    img.addEventListener("pointerdown", onIconPress, { passive: true });
+    img.style.left = x+"px";
+    img.style.top = y+"px";
+
+    img.style.transform =
+      "translate(-50%, -50%) rotate("+(Math.random()*60-30)+"deg)";
+
+    img.addEventListener("pointerdown", onIconPress,{passive:true});
+
     el.appendChild(img);
-  });
-}
 
+  });
+
+}
 function rand(min, max) {
   return Math.random() * (max - min) + min;
 }
