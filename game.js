@@ -330,7 +330,6 @@ function rand(min, max) {
 
   // רדיוס פנימי של העיגול (משאיר שוליים כדי לא לגעת במסגרת)
   const circleR = Math.min(W, H) * 0.44;
-
   // גודל בסיס – נקבע לפי מסך (ואז נייצר וריאציות)
   const base = clamp(Math.min(W, H) / 4.0, 44, 78);
 
