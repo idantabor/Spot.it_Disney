@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Spot It - Browser Game</title>
+  <link rel="stylesheet" href="style.css?v=26" />
+</head>
+<body>
+  <div class="bg"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">👑</div>
+      <div class="title">
+        <div class="h1">Spot It</div>
+        <div class="h2">מצאי את התמונה המשותפת</div>
+      </div>
+    </div>
+
+    <div class="hud">
+      <div class="pill"><span class="label">זמן</span><span id="timeLeft">—</span></div>
+      <div class="pill"><span class="label">ניקוד</span><span id="score">0</span></div>
+      <button id="btnRestart" class="btn small" type="button">התחלה מחדש</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="panel" id="setupPanel">
+      <h3>הגדרות משחק</h3>
+
+      <div class="row">
+        <label for="difficulty">רמה</label>
+        <select id="difficulty">
+          <option value="easy">קל (4 סמלים)</option>
+          <option value="medium">בינוני (6 סמלים)</option>
+          <option value="hard" selected>קשה (8 סמלים)</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <label for="duration">אורך משחק</label>
+        <select id="duration">
+          <option value="30">30 שניות</option>
+          <option value="60" selected>60 שניות</option>
+          <option value="90">90 שניות</option>
+        </select>
+      </div>
+
+      <button id="btnStart" class="btn" type="button">יאללה משחק 🎮</button>
+
+      <p class="note">
+        לחצי על התמונה המשותפת בין שני הקלפים.
+        עובד במובייל (טאץ׳) ובמחשב (עכבר).
+      </p>
+    </section>
+
+    <section class="game" id="gameArea" aria-live="polite">
+      <div class="card" id="cardA" aria-label="קלף שמאל"></div>
+      <div class="card" id="cardB" aria-label="קלף ימין"></div>
+
+      <div class="toast" id="toast" aria-hidden="true"></div>
+    </section>
+
+    <section class="panel hidden" id="endPanel">
+      <h3>נגמר הזמן ⏰</h3>
+      <p class="big">הניקוד שלך: <span id="finalScore">0</span></p>
+      <button id="btnPlayAgain" class="btn" type="button">שחקי שוב</button>
+    </section>
+  </main>
+
+  <script src="game.js?v=26"></script>
+</body>
+</html>
